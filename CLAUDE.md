@@ -55,5 +55,6 @@ produces working, testable software on its own.
 
 ## Status
 
-Pre-implementation. Design spec approved/under review; implementation plans being
-written. Not yet a git repository — initialize before first commit.
+Pre-implementation. Design spec + Phase 1 plan written. Git repo initialized;
+remote: https://github.com/INmahi/personal-finance (public). Phase 1 (backend)
+ready to build.
