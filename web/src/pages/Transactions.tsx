@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useFinance } from '../data/FinanceProvider';
 import TransactionForm from '../components/TransactionForm';
+import BatchAddForm from '../components/BatchAddForm';
 import TransactionList from '../components/TransactionList';
 import { formatBDT } from '../lib/format';
 
 export default function Transactions() {
   const { loading, error, transactions, removeTransaction } = useFinance();
+  const [mode, setMode] = useState<'single' | 'batch'>('single');
 
   const net = transactions.reduce((s, t) => s + (t.direction === 'in' ? t.amount : -t.amount), 0);
 
@@ -18,7 +21,24 @@ export default function Transactions() {
       <h1 style={{ margin: 0 }}>Transactions</h1>
       {error && <div className="error">{error}</div>}
 
-      <TransactionForm />
+      <div className="seg" role="group" aria-label="Add mode" style={{ alignSelf: 'flex-start' }}>
+        <button
+          type="button"
+          className={mode === 'single' ? 'active' : ''}
+          onClick={() => setMode('single')}
+        >
+          Single
+        </button>
+        <button
+          type="button"
+          className={mode === 'batch' ? 'active' : ''}
+          onClick={() => setMode('batch')}
+        >
+          Batch add
+        </button>
+      </div>
+
+      {mode === 'single' ? <TransactionForm /> : <BatchAddForm onDone={() => setMode('single')} />}
 
       <div className="card">
         <div

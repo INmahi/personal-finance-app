@@ -24,6 +24,7 @@ interface FinanceState {
   fixedMonthlyTotal: number;
   refresh: () => Promise<void>;
   addTransaction: (input: NewTransaction) => Promise<void>;
+  addTransactions: (inputs: NewTransaction[]) => Promise<void>;
   removeTransaction: (id: string) => Promise<void>;
   addCategory: (input: NewCategory) => Promise<void>;
   renameCategory: (id: string, patch: { name?: string; color?: string | null }) => Promise<void>;
@@ -67,6 +68,11 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
   const addTransaction = useCallback(async (input: NewTransaction) => {
     const created = await api.createTransaction(input);
     setTransactions((prev) => sortTx([created, ...prev]));
+  }, []);
+
+  const addTransactions = useCallback(async (inputs: NewTransaction[]) => {
+    const created = await api.createTransactions(inputs);
+    setTransactions((prev) => sortTx([...created, ...prev]));
   }, []);
 
   const removeTransaction = useCallback(async (id: string) => {
@@ -138,6 +144,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     fixedExpenses,
     refresh,
     addTransaction,
+    addTransactions,
     removeTransaction,
     addCategory,
     renameCategory,

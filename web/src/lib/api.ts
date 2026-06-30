@@ -83,6 +83,14 @@ export async function createTransaction(input: NewTransaction): Promise<Transact
   return { ...row, amount: Number(row.amount) };
 }
 
+export async function createTransactions(inputs: NewTransaction[]): Promise<Transaction[]> {
+  const user_id = await requireUserId();
+  const rows = inputs.map((i) => ({ ...i, user_id }));
+  const { data, error } = await supabase.from('transactions').insert(rows).select();
+  if (error) throw error;
+  return (data as Transaction[]).map((r) => ({ ...r, amount: Number(r.amount) }));
+}
+
 export async function softDeleteTransaction(id: string): Promise<void> {
   const { error } = await supabase.from('transactions').update({ deleted: true }).eq('id', id);
   if (error) throw error;
