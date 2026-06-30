@@ -1,0 +1,53 @@
+.shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar .brand {
+  font-weight: 800;
+  font-size: var(--fs-lg);
+}
+.topbar .brand span {
+  color: var(--primary);
+}
+
+.topbar .nav {
+  display: flex;
+  gap: var(--sp-2);
+  margin-right: auto;
+}
+.topbar .nav a {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.topbar .nav a:hover {
+  background: var(--surface-2);
+}
+.topbar .nav a.active {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.topbar .actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.content {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: var(--sp-5);
+}
