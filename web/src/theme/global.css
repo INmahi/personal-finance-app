@@ -87,3 +87,37 @@ select:focus {
   padding: var(--sp-3);
   font-size: var(--fs-sm);
 }
+
+/* Micro-interactions */
+.btn {
+  transition:
+    background var(--slide-ms) var(--ease),
+    transform 90ms var(--ease);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.card {
+  transition:
+    box-shadow var(--slide-ms) var(--ease),
+    transform var(--slide-ms) var(--ease);
+}
+input,
+select {
+  transition:
+    border-color var(--slide-ms) var(--ease),
+    box-shadow var(--slide-ms) var(--ease);
+}
+input:focus,
+select:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .card,
+  input,
+  select {
+    transition: none;
+  }
+}

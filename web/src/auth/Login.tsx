@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
+import Logo from '../components/Logo';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -28,9 +29,9 @@ export default function Login() {
       }}
     >
       <form className="card" style={{ width: 360, maxWidth: '100%' }} onSubmit={onSubmit}>
-        <h1 style={{ fontSize: 'var(--fs-xl)' }}>
-          Xpense<span style={{ color: 'var(--primary)' }}>Tracker</span>
-        </h1>
+        <div style={{ marginBottom: 'var(--sp-2)' }}>
+          <Logo size={40} />
+        </div>
         <p className="muted" style={{ marginTop: 0 }}>Sign in to your account</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)', marginTop: 'var(--sp-4)' }}>

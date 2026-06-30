@@ -73,9 +73,12 @@ backend was built via the Supabase MCP. Migrations replay locally with
 tokens (`web/src/theme/tokens.css`); `supabase-js` with persistent sessions
 (login once — stored in localStorage, key `xpense-auth`).
 
-Navigation: sticky header with **Search** (→ `/search` page) and **Filter**
-(→ Reports) buttons + a **Summary** slide-over; scrollable tabs. **Transactions
-is the default page** (`/`). Screens: Transactions (add + list + soft-delete),
+Navigation: sticky (blurred) header with an **SVG logo mark + wordmark**,
+**Search** (→ `/search` page) and **Filter** (→ Reports) buttons + a **Summary**
+slide-over. Desktop shows inline scrollable tabs; **mobile collapses into an
+animated hamburger drawer**. Smooth transitions throughout (route fade-in,
+drawer slide, hamburger morph, button press, row hover). **Transactions is the
+default page** (`/`). Screens: Transactions (add + list + soft-delete),
 Overview (`/overview`: balance / spent / income), Search (note/category/amount/
 payment/date), Reports & filters (date range + category/type/payment, colored
 by-category bars, by-payment, fixed reference, matching list), Categories

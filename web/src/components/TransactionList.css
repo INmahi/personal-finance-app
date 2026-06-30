@@ -3,8 +3,13 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-3);
-  padding: var(--sp-3) 0;
+  padding: var(--sp-3) var(--sp-2);
   border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background var(--slide-ms) var(--ease);
+}
+.tx-row:hover {
+  background: var(--surface-2);
 }
 .tx-row:last-child {
   border-bottom: none;

@@ -7,35 +7,63 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(1.1) blur(8px);
   border-bottom: 1px solid var(--border);
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
+  gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
 }
-.topbar .brand {
+
+/* Brand / logo */
+.brand-btn {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  margin: -4px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-mark {
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(201, 100, 66, 0.28));
+  transition: transform var(--slide-ms) var(--ease);
+}
+.brand-btn:hover .logo-mark {
+  transform: translateY(-1px) rotate(-3deg);
+}
+.logo-word {
   font-weight: 800;
   font-size: var(--fs-lg);
-  margin-right: auto;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  color: var(--text);
 }
-.topbar .brand span {
+.logo-word span {
   color: var(--primary);
 }
-.topbar .actions {
+
+/* Desktop action buttons */
+.bar-actions {
   display: flex;
   gap: var(--sp-2);
-  flex-wrap: wrap;
+  margin-left: auto;
+  flex-wrap: nowrap;
 }
-.topbar .actions .btn {
-  padding: 8px 12px;
+.bar-actions .btn {
+  white-space: nowrap;
 }
 
-/* Tabs: horizontally scrollable on small screens, never wrap/break. */
+/* Tabs */
 .tabs {
   display: flex;
   gap: var(--sp-1);
@@ -45,16 +73,123 @@
   white-space: nowrap;
   scrollbar-width: thin;
 }
-.tabs .tab {
+.tab {
   flex: 0 0 auto;
   padding: 8px 14px;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   font-weight: 600;
+  transition:
+    background var(--slide-ms) var(--ease),
+    color var(--slide-ms) var(--ease);
 }
-.tabs .tab.active {
+.tab:hover {
+  background: var(--surface-2);
+}
+.tab.active {
   background: var(--surface-2);
   color: var(--text);
+}
+
+/* Hamburger (mobile only) */
+.hamburger {
+  display: none;
+  margin-left: auto;
+  width: 44px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  position: relative;
+}
+.ham-inner,
+.ham-inner::before,
+.ham-inner::after {
+  position: absolute;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition:
+    transform var(--slide-ms) var(--ease),
+    opacity calc(var(--slide-ms) / 2) var(--ease);
+}
+.ham-inner {
+  top: 50%;
+  margin-top: -1px;
+}
+.ham-inner::before {
+  content: '';
+  top: -6px;
+}
+.ham-inner::after {
+  content: '';
+  top: 6px;
+}
+.hamburger.open .ham-inner {
+  background: transparent;
+}
+.hamburger.open .ham-inner::before {
+  transform: translateX(-50%) translateY(6px) rotate(45deg);
+}
+.hamburger.open .ham-inner::after {
+  transform: translateX(-50%) translateY(-6px) rotate(-45deg);
+}
+
+/* Mobile drawer */
+.drawer {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .bar-actions {
+    display: none;
+  }
+  .desktop-tabs {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+  .drawer {
+    display: block;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition:
+      max-height var(--slide-ms) var(--ease),
+      opacity var(--slide-ms) var(--ease);
+  }
+  .drawer.open {
+    max-height: 60vh;
+    opacity: 1;
+  }
+  .drawer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4) var(--sp-4);
+    border-top: 1px solid var(--border);
+  }
+  .drawer-tabs {
+    flex-direction: column;
+    gap: var(--sp-1);
+    overflow: visible;
+    white-space: normal;
+    padding: 0;
+  }
+  .drawer-tabs .tab {
+    padding: 12px 14px;
+  }
+  .drawer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-2);
+  }
 }
 
 .content {
@@ -62,9 +197,34 @@
   margin: 0 auto;
   padding: var(--sp-4);
 }
-
+.route-view {
+  animation: route-in 260ms var(--ease) both;
+}
 @media (min-width: 720px) {
   .content {
     padding: var(--sp-5);
+  }
+}
+
+@keyframes route-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-view {
+    animation: none;
+  }
+  .logo-mark,
+  .ham-inner,
+  .ham-inner::before,
+  .ham-inner::after {
+    transition: none;
   }
 }
