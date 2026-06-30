@@ -4,6 +4,8 @@ import { useFinance } from '../data/FinanceProvider';
 import { PAYMENT_METHODS } from '../types/db';
 import type { Direction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
+import CompactDate from './CompactDate';
+import { IconNote } from './icons';
 
 export default function TransactionForm() {
   const { categories, addTransaction } = useFinance();
@@ -13,6 +15,7 @@ export default function TransactionForm() {
   const [categoryId, setCategoryId] = useState('');
   const [payment, setPayment] = useState<PaymentMethod>('cash');
   const [note, setNote] = useState('');
+  const [noteOpen, setNoteOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +47,7 @@ export default function TransactionForm() {
       });
       setAmount('');
       setNote('');
+      setNoteOpen(false);
       setCategoryId('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
@@ -63,7 +67,19 @@ export default function TransactionForm() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 'var(--sp-3)' }}>
+      <div className="entry-row">
+        <div className="field grow2">
+          <label htmlFor="where">{kind === 'expense' ? 'Where spent' : 'Source'}</label>
+          <select id="where" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <option value="">{kind === 'expense' ? 'Uncategorized' : 'Unspecified'}</option>
+            {cats.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="field">
           <label htmlFor="amount">Amount (৳)</label>
           <input
@@ -79,21 +95,9 @@ export default function TransactionForm() {
           />
         </div>
 
-        <div className="field">
-          <label htmlFor="date">Date</label>
-          <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        </div>
-
-        <div className="field">
-          <label htmlFor="category">{kind === 'expense' ? 'Category' : 'Source'}</label>
-          <select id="category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-            <option value="">{kind === 'expense' ? 'Uncategorized' : 'Unspecified'}</option>
-            {cats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+        <div className="field shrink">
+          <label>Date</label>
+          <CompactDate value={date} onChange={setDate} ariaLabel="Spent on date" />
         </div>
 
         <div className="field">
@@ -106,12 +110,32 @@ export default function TransactionForm() {
             ))}
           </select>
         </div>
+
+        <button
+          type="button"
+          className={'icon-btn note-toggle' + (noteOpen || note ? ' active' : '')}
+          onClick={() => setNoteOpen((o) => !o)}
+          aria-label={noteOpen ? 'Hide note' : 'Add note'}
+          title="Note"
+        >
+          <IconNote />
+        </button>
       </div>
 
-      <div className="field">
-        <label htmlFor="note">Note (optional)</label>
-        <input id="note" type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Lunch at office" />
-      </div>
+      {noteOpen && (
+        <div className="field">
+          <label htmlFor="note">Note</label>
+          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+          <input
+            id="note"
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="e.g. Lunch at office"
+            autoFocus
+          />
+        </div>
+      )}
 
       {error && <div className="error">{error}</div>}
 

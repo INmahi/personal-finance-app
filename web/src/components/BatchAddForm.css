@@ -1,7 +1,7 @@
 .batch-head,
 .batch-row {
   display: grid;
-  grid-template-columns: 110px 150px minmax(110px, 1fr) 110px minmax(130px, 1.6fr) 36px;
+  grid-template-columns: minmax(120px, 1.4fr) 100px auto 110px 36px 36px;
   gap: var(--sp-2);
   align-items: center;
 }
@@ -13,13 +13,21 @@
   padding: 0 2px;
 }
 
-.batch-row .rm {
+.batch-row .icon-sm {
   width: 34px;
   height: 38px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.batch-row .icon-sm.active {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.batch-row .note-cell {
+  grid-column: 1 / -1;
 }
 
 /* Mobile: compact 2-column card per row, no header */
@@ -36,9 +44,5 @@
   }
   .batch-row .note-cell {
     grid-column: 1 / -1;
-  }
-  .batch-row .rm {
-    grid-column: 1 / -1;
-    width: 100%;
   }
 }

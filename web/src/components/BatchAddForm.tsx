@@ -3,6 +3,8 @@ import { useFinance } from '../data/FinanceProvider';
 import { PAYMENT_METHODS } from '../types/db';
 import type { NewTransaction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
+import CompactDate from './CompactDate';
+import { IconNote } from './icons';
 import './BatchAddForm.css';
 
 interface Draft {
@@ -11,6 +13,7 @@ interface Draft {
   categoryId: string;
   payment: PaymentMethod;
   note: string;
+  noteOpen: boolean;
 }
 
 function blank(prev?: Draft): Draft {
@@ -21,6 +24,7 @@ function blank(prev?: Draft): Draft {
     categoryId: '',
     payment: prev?.payment ?? 'cash',
     note: '',
+    noteOpen: false,
   };
 }
 
@@ -87,16 +91,29 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
       </div>
 
       <div className="batch-head">
+        <span>Where spent</span>
         <span>Amount (৳)</span>
         <span>Date</span>
-        <span>Category</span>
         <span>Payment</span>
-        <span>Note</span>
+        <span />
         <span />
       </div>
 
       {rows.map((r, i) => (
         <div className="batch-row" key={i}>
+          <select
+            value={r.categoryId}
+            onChange={(e) => update(i, { categoryId: e.target.value })}
+            aria-label={`Row ${i + 1} where spent`}
+          >
+            <option value="">Uncategorized</option>
+            {expenseCats.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
           <input
             type="number"
             step="0.01"
@@ -106,24 +123,13 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
             placeholder="0.00"
             aria-label={`Row ${i + 1} amount`}
           />
-          <input
-            type="date"
+
+          <CompactDate
             value={r.date}
-            onChange={(e) => update(i, { date: e.target.value })}
-            aria-label={`Row ${i + 1} date`}
+            onChange={(v) => update(i, { date: v })}
+            ariaLabel={`Row ${i + 1} date`}
           />
-          <select
-            value={r.categoryId}
-            onChange={(e) => update(i, { categoryId: e.target.value })}
-            aria-label={`Row ${i + 1} category`}
-          >
-            <option value="">Uncategorized</option>
-            {expenseCats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+
           <select
             value={r.payment}
             onChange={(e) => update(i, { payment: e.target.value as PaymentMethod })}
@@ -135,15 +141,19 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
               </option>
             ))}
           </select>
-          <input
-            className="note-cell"
-            value={r.note}
-            onChange={(e) => update(i, { note: e.target.value })}
-            placeholder="Note (optional)"
-            aria-label={`Row ${i + 1} note`}
-          />
+
           <button
-            className="btn btn-ghost rm"
+            className={'btn btn-ghost icon-sm' + (r.noteOpen || r.note ? ' active' : '')}
+            type="button"
+            onClick={() => update(i, { noteOpen: !r.noteOpen })}
+            aria-label={`Row ${i + 1} note`}
+            title="Note"
+          >
+            <IconNote />
+          </button>
+
+          <button
+            className="btn btn-ghost icon-sm"
             type="button"
             onClick={() => removeRow(i)}
             disabled={rows.length === 1}
@@ -151,6 +161,16 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
           >
             ✕
           </button>
+
+          {r.noteOpen && (
+            <input
+              className="note-cell"
+              value={r.note}
+              onChange={(e) => update(i, { note: e.target.value })}
+              placeholder="Note (optional)"
+              aria-label={`Row ${i + 1} note text`}
+            />
+          )}
         </div>
       ))}
 

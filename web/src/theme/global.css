@@ -113,6 +113,27 @@ select:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
+/* Inline entry row: category grows, date stays compact, note is a toggle. */
+.entry-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: flex-end;
+}
+.entry-row .field {
+  flex: 1 1 140px;
+}
+.entry-row .field.grow2 {
+  flex: 2 1 180px;
+}
+.entry-row .field.shrink {
+  flex: 0 0 auto;
+}
+.note-toggle.active {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn,
   .card,
