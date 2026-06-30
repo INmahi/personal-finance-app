@@ -2,7 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react';
 import type {
   Category,
-  CategoryKind,
   FixedExpense,
   NewCategory,
   NewFixedExpense,
@@ -11,7 +10,6 @@ import type {
 } from '../types/db';
 import * as api from '../lib/api';
 import { monthStartISO } from '../lib/format';
-import { suggestColor } from '../lib/colors';
 
 interface FinanceState {
   loading: boolean;
@@ -29,7 +27,6 @@ interface FinanceState {
   addTransactions: (inputs: NewTransaction[]) => Promise<void>;
   removeTransaction: (id: string) => Promise<void>;
   addCategory: (input: NewCategory) => Promise<void>;
-  ensureCategory: (name: string, kind: CategoryKind) => Promise<Category | null>;
   renameCategory: (id: string, patch: { name?: string; color?: string | null }) => Promise<void>;
   removeCategory: (id: string) => Promise<void>;
   addFixedExpense: (input: NewFixedExpense) => Promise<void>;
@@ -87,27 +84,6 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     const created = await api.createCategory(input);
     setCategories((prev) => [...prev, created]);
   }, []);
-
-  // Match an existing category by name (case-insensitive) or create it.
-  // Empty name => null (truly no category).
-  const ensureCategory = useCallback(
-    async (name: string, kind: CategoryKind): Promise<Category | null> => {
-      const trimmed = name.trim();
-      if (!trimmed) return null;
-      const existing = categories.find(
-        (c) => c.kind === kind && c.name.toLowerCase() === trimmed.toLowerCase(),
-      );
-      if (existing) return existing;
-      const created = await api.createCategory({
-        name: trimmed,
-        kind,
-        color: suggestColor(categories.length),
-      });
-      setCategories((prev) => [...prev, created]);
-      return created;
-    },
-    [categories],
-  );
 
   const renameCategory = useCallback(
     async (id: string, patch: { name?: string; color?: string | null }) => {
@@ -171,7 +147,6 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     addTransactions,
     removeTransaction,
     addCategory,
-    ensureCategory,
     renameCategory,
     removeCategory,
     addFixedExpense,

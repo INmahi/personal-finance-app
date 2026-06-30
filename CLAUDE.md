@@ -24,8 +24,10 @@ Full design: [docs/superpowers/specs/2026-06-29-xpensetracker-design.md](docs/su
 
 - `profiles` — one per auth user (display name); auto-created on signup.
 - `categories` — user-owned, `kind` = expense | income; seeded on signup.
-- `transactions` — money in/out (`direction`), amount, date, category,
-  `payment_method` (cash | bkash | bank), note. Balance = sum(in) − sum(out).
+- `transactions` — money in/out (`direction`), amount, date, category
+  (`category_id` FK, or free-text `category_label` when the user types a custom
+  "Spent on" value — typing never creates a category), `payment_method`
+  (cash | bkash | bank), note. Balance = sum(in) − sum(out).
 - `fixed_expenses` — separate list of recurring monthly commitments (reference
   only; not posted as transactions, does not affect balance).
 

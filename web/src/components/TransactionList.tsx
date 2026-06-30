@@ -1,6 +1,6 @@
 import { useFinance } from '../data/FinanceProvider';
 import { formatBDT, formatDate } from '../lib/format';
-import { categoryColor } from '../lib/colors';
+import { txCategoryColor, txCategoryName } from '../lib/category';
 import type { Transaction } from '../types/db';
 import './TransactionList.css';
 
@@ -17,9 +17,8 @@ export default function TransactionList({
   return (
     <div>
       {items.map((t) => {
-        const category = t.category_id ? categoriesById[t.category_id] : undefined;
-        const name = category?.name ?? 'Uncategorized';
-        const dot = category ? categoryColor(category) : 'var(--border)';
+        const name = txCategoryName(t, categoriesById);
+        const dot = txCategoryColor(t, categoriesById);
         return (
           <div key={t.id} className="tx-row">
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', minWidth: 0 }}>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useFinance } from '../data/FinanceProvider';
 import { formatBDT, monthStartISO, todayISO } from '../lib/format';
-import { categoryColor } from '../lib/colors';
+import { txCategoryColor, txCategoryName } from '../lib/category';
 import TransactionList from '../components/TransactionList';
 import type { Direction, PaymentMethod } from '../types/db';
 import { PAYMENT_METHODS } from '../types/db';
@@ -61,10 +61,9 @@ export default function Reports() {
     const m = new Map<string, { name: string; total: number; color: string }>();
     for (const t of filtered) {
       if (t.direction !== 'out') continue;
-      const c = t.category_id ? categoriesById[t.category_id] : undefined;
-      const key = c?.id ?? 'uncategorized';
-      const name = c?.name ?? 'Uncategorized';
-      const color = c ? categoryColor(c) : 'var(--border)';
+      const name = txCategoryName(t, categoriesById);
+      const key = name.toLowerCase();
+      const color = txCategoryColor(t, categoriesById);
       const cur = m.get(key);
       if (cur) cur.total += t.amount;
       else m.set(key, { name, total: t.amount, color });

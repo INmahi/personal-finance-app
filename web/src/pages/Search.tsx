@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useFinance } from '../data/FinanceProvider';
 import TransactionList from '../components/TransactionList';
 import { formatBDT } from '../lib/format';
+import { txCategoryName } from '../lib/category';
 
 export default function Search() {
   const { transactions, categoriesById, removeTransaction } = useFinance();
@@ -12,7 +13,7 @@ export default function Search() {
   const results = useMemo(() => {
     if (!query) return [];
     return transactions.filter((t) => {
-      const cat = t.category_id ? (categoriesById[t.category_id]?.name ?? '') : '';
+      const cat = txCategoryName(t, categoriesById);
       const haystack = [
         t.note ?? '',
         cat,

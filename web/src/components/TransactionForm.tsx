@@ -4,11 +4,12 @@ import { useFinance } from '../data/FinanceProvider';
 import { PAYMENT_METHODS } from '../types/db';
 import type { Direction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
+import { resolveCategoryInput } from '../lib/category';
 import CompactDate from './CompactDate';
 import { IconNote } from './icons';
 
 export default function TransactionForm() {
-  const { categories, addTransaction, ensureCategory } = useFinance();
+  const { categories, addTransaction } = useFinance();
   const [direction, setDirection] = useState<Direction>('out');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(todayISO());
@@ -37,12 +38,13 @@ export default function TransactionForm() {
     }
     setBusy(true);
     try {
-      const cat = await ensureCategory(categoryName, kind);
+      const resolved = resolveCategoryInput(categoryName, kind, categories);
       await addTransaction({
         direction,
         amount: amt,
         occurred_on: date,
-        category_id: cat ? cat.id : null,
+        category_id: resolved.category_id,
+        category_label: resolved.category_label,
         payment_method: payment,
         note: note.trim() || null,
       });

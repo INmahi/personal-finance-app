@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useFinance } from '../data/FinanceProvider';
 import { formatBDT, monthStartISO, todayISO } from '../lib/format';
+import { txCategoryName } from '../lib/category';
 import { downloadCSV } from '../lib/csv';
 import './SummaryPanel.css';
 
@@ -34,14 +35,12 @@ export default function SummaryPanel({ open, onClose }: { open: boolean; onClose
     [transactions, scope, expensesOnly, monthStart, start, end],
   );
 
-  const catName = (id: string | null) =>
-    id ? (categoriesById[id]?.name ?? 'Uncategorized') : 'Uncategorized';
-
   const byCategory = useMemo(() => {
     const m = new Map<string, number>();
     for (const t of inScope) {
       if (t.direction !== 'out') continue;
-      m.set(catName(t.category_id), (m.get(catName(t.category_id)) ?? 0) + t.amount);
+      const name = txCategoryName(t, categoriesById);
+      m.set(name, (m.get(name) ?? 0) + t.amount);
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,7 +57,7 @@ export default function SummaryPanel({ open, onClose }: { open: boolean; onClose
       ['Date', 'Category', 'Payment', 'Amount (BDT)', 'Note'],
       ...expenses.map((t) => [
         t.occurred_on,
-        catName(t.category_id),
+        txCategoryName(t, categoriesById),
         t.payment_method,
         t.amount.toFixed(2),
         t.note ?? '',

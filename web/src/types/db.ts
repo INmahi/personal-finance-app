@@ -20,6 +20,7 @@ export interface Transaction {
   amount: number;
   occurred_on: string; // YYYY-MM-DD
   category_id: string | null;
+  category_label: string | null;
   payment_method: PaymentMethod;
   note: string | null;
   created_at: string;
@@ -45,6 +46,7 @@ export interface NewTransaction {
   amount: number;
   occurred_on: string;
   category_id: string | null;
+  category_label: string | null;
   payment_method: PaymentMethod;
   note: string | null;
 }

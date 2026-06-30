@@ -3,6 +3,7 @@ import { useFinance } from '../data/FinanceProvider';
 import { PAYMENT_METHODS } from '../types/db';
 import type { NewTransaction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
+import { resolveCategoryInput } from '../lib/category';
 import CompactDate from './CompactDate';
 import { IconNote } from './icons';
 import './BatchAddForm.css';
@@ -28,7 +29,7 @@ function blank(prev?: Draft): Draft {
 }
 
 export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
-  const { categories, addTransactions, ensureCategory } = useFinance();
+  const { categories, addTransactions } = useFinance();
   const expenseCats = useMemo(() => categories.filter((c) => c.kind === 'expense'), [categories]);
   const [rows, setRows] = useState<Draft[]>([blank(), blank(), blank()]);
   const [busy, setBusy] = useState(false);
@@ -63,34 +64,18 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
 
     setBusy(true);
     try {
-      // Resolve category names -> ids, creating new ones once each.
-      const map = new Map<string, string>();
-      for (const c of expenseCats) map.set(c.name.toLowerCase(), c.id);
-
-      const inputs: NewTransaction[] = [];
-      for (const r of nonEmpty) {
-        const nm = r.categoryName.trim();
-        let catId: string | null = null;
-        if (nm) {
-          const key = nm.toLowerCase();
-          if (map.has(key)) catId = map.get(key)!;
-          else {
-            const created = await ensureCategory(nm, 'expense');
-            if (created) {
-              catId = created.id;
-              map.set(key, created.id);
-            }
-          }
-        }
-        inputs.push({
+      const inputs: NewTransaction[] = nonEmpty.map((r) => {
+        const resolved = resolveCategoryInput(r.categoryName, 'expense', categories);
+        return {
           direction: 'out',
           amount: Number(r.amount),
           occurred_on: r.date,
-          category_id: catId,
+          category_id: resolved.category_id,
+          category_label: resolved.category_label,
           payment_method: r.payment,
           note: r.note.trim() || null,
-        });
-      }
+        };
+      });
 
       await addTransactions(inputs);
       setRows([blank(), blank(), blank()]);
