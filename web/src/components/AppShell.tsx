@@ -23,6 +23,15 @@ export default function AppShell() {
           <NavLink to="/transactions" className={linkClass}>
             Transactions
           </NavLink>
+          <NavLink to="/reports" className={linkClass}>
+            Reports
+          </NavLink>
+          <NavLink to="/categories" className={linkClass}>
+            Categories
+          </NavLink>
+          <NavLink to="/fixed" className={linkClass}>
+            Fixed
+          </NavLink>
         </nav>
         <div className="actions">
           <button className="btn btn-primary" onClick={() => setSummaryOpen(true)}>

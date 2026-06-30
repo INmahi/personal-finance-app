@@ -6,6 +6,9 @@ import AppShell from './components/AppShell';
 import { FinanceProvider } from './data/FinanceProvider';
 import Home from './pages/Home';
 import Transactions from './pages/Transactions';
+import Categories from './pages/Categories';
+import FixedExpenses from './pages/FixedExpenses';
+import Reports from './pages/Reports';
 
 export default function App() {
   const { session } = useAuth();
@@ -24,6 +27,9 @@ export default function App() {
       >
         <Route path="/" element={<Home />} />
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/fixed" element={<FixedExpenses />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

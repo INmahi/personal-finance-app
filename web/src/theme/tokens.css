@@ -1,19 +1,19 @@
-/* XpenseTracker — light theme design tokens (single source of truth). */
+/* XpenseTracker — Claude-style warm light theme (single source of truth). */
 :root {
-  /* Color — light, calm, finance-trustworthy */
-  --bg: #f5f7fa;
+  /* Color — warm ivory surfaces with Claude coral accent */
+  --bg: #faf9f5;
   --surface: #ffffff;
-  --surface-2: #eef1f5;
-  --border: #e2e6ec;
-  --text: #161b22;
-  --text-muted: #687280;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
+  --surface-2: #f0eee6;
+  --border: #e6e0d4;
+  --text: #1f1e1d;
+  --text-muted: #6b665c;
+  --primary: #c96442; /* Claude coral */
+  --primary-hover: #b5563a;
   --primary-contrast: #ffffff;
-  --income: #14855a; /* money in */
-  --expense: #1b2733; /* money out — neutral-dark, not alarming */
-  --danger: #d23b3b;
-  --danger-bg: #fdecec;
+  --income: #2f7d57; /* money in */
+  --expense: #2a2724; /* money out — warm neutral-dark */
+  --danger: #b3402c;
+  --danger-bg: #f6e6e1;
 
   /* Radius */
   --radius-sm: 8px;
@@ -29,11 +29,11 @@
   --sp-6: 32px;
 
   /* Elevation */
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
-  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.18);
+  --shadow-sm: 0 1px 2px rgba(60, 50, 35, 0.06), 0 1px 3px rgba(60, 50, 35, 0.08);
+  --shadow-lg: 0 12px 32px rgba(60, 50, 35, 0.16);
 
   /* Type */
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
   --fs-sm: 13px;
   --fs-md: 15px;
   --fs-lg: 20px;

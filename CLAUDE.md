@@ -68,13 +68,15 @@ Local Supabase CLI install was blocked by a network error at build time; the
 backend was built via the Supabase MCP. Migrations replay locally with
 `npx supabase db reset` once the CLI installs.
 
-**Phase 2 (web app) — in progress.** React + Vite + TS in `web/` (light theme,
-design tokens, `supabase-js`). Done: auth/login + persistent session, app shell,
-Home overview (balance / spent / income), Transactions (add expense + add money,
-filters, search, soft-delete), and the Summary slide-over (spent-this-month +
-remaining money, expenses-only toggle, CSV export). Builds clean (`npm run build`).
+**Phase 2 (web app) — complete.** React + Vite + TS in `web/`. **Claude-style
+warm theme** (ivory surfaces + coral accent) via shared design tokens
+(`web/src/theme/tokens.css`); `supabase-js` with persistent sessions. Screens:
+Login, Home overview (balance / spent / income), Transactions (add expense + add
+money, filters, search, soft-delete), Reports (date-range totals, by-category
+bars, by-payment, fixed reference), Categories (CRUD), Fixed expenses (CRUD +
+monthly total), and the Summary slide-over (spent-this-month + remaining money,
+expenses-only toggle, CSV export). Builds clean (`npm run build`).
 Run: `cd web && npm run dev`. Demo login: `demo@xpense.app` / `Demo123456`.
-Still to do: Categories management, Fixed expenses, full Reports page.
 
-Next: finish Phase 2 screens, then Phase 3 (mobile + offline sync).
-Remote: https://github.com/INmahi/personal-finance-app
+Next: Phase 3 (mobile + offline sync). Remote:
+https://github.com/INmahi/personal-finance-app
