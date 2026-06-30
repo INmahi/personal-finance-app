@@ -1,53 +1,70 @@
 .shell {
   min-height: 100vh;
+  padding-bottom: var(--sp-6);
 }
 
-.topbar {
+.appheader {
   position: sticky;
   top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-5);
-  padding: var(--sp-3) var(--sp-5);
+  z-index: 20;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-3) var(--sp-4);
+}
 .topbar .brand {
   font-weight: 800;
   font-size: var(--fs-lg);
+  margin-right: auto;
 }
 .topbar .brand span {
   color: var(--primary);
 }
-
-.topbar .nav {
+.topbar .actions {
   display: flex;
   gap: var(--sp-2);
-  margin-right: auto;
+  flex-wrap: wrap;
 }
-.topbar .nav a {
+.topbar .actions .btn {
   padding: 8px 12px;
+}
+
+/* Tabs: horizontally scrollable on small screens, never wrap/break. */
+.tabs {
+  display: flex;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-3) var(--sp-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+.tabs .tab {
+  flex: 0 0 auto;
+  padding: 8px 14px;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   font-weight: 600;
 }
-.topbar .nav a:hover {
-  background: var(--surface-2);
-}
-.topbar .nav a.active {
+.tabs .tab.active {
   background: var(--surface-2);
   color: var(--text);
-}
-
-.topbar .actions {
-  display: flex;
-  gap: var(--sp-2);
 }
 
 .content {
   max-width: 920px;
   margin: 0 auto;
-  padding: var(--sp-5);
+  padding: var(--sp-4);
+}
+
+@media (min-width: 720px) {
+  .content {
+    padding: var(--sp-5);
+  }
 }

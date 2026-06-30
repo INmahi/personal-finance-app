@@ -11,8 +11,12 @@ if (!url || !key) {
 
 export const supabase = createClient(url, key, {
   auth: {
+    // Persist the session in localStorage and refresh it silently, so the user
+    // logs in once and stays logged in across reloads and re-opens.
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: false,
+    storage: window.localStorage,
+    storageKey: 'xpense-auth',
   },
 });

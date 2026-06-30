@@ -68,15 +68,26 @@ Local Supabase CLI install was blocked by a network error at build time; the
 backend was built via the Supabase MCP. Migrations replay locally with
 `npx supabase db reset` once the CLI installs.
 
-**Phase 2 (web app) — complete.** React + Vite + TS in `web/`. **Claude-style
-warm theme** (ivory surfaces + coral accent) via shared design tokens
-(`web/src/theme/tokens.css`); `supabase-js` with persistent sessions. Screens:
-Login, Home overview (balance / spent / income), Transactions (add expense + add
-money, filters, search, soft-delete), Reports (date-range totals, by-category
-bars, by-payment, fixed reference), Categories (CRUD), Fixed expenses (CRUD +
-monthly total), and the Summary slide-over (spent-this-month + remaining money,
-expenses-only toggle, CSV export). Builds clean (`npm run build`).
-Run: `cd web && npm run dev`. Demo login: `demo@xpense.app` / `Demo123456`.
+**Phase 2 (web app) — complete (mobile-first).** React + Vite + TS in `web/`.
+**Claude-style warm theme** (ivory surfaces + coral accent) via shared design
+tokens (`web/src/theme/tokens.css`); `supabase-js` with persistent sessions
+(login once — stored in localStorage, key `xpense-auth`).
+
+Navigation: sticky header with **Search** (→ `/search` page) and **Filter**
+(→ Reports) buttons + a **Summary** slide-over; scrollable tabs. **Transactions
+is the default page** (`/`). Screens: Transactions (add + list + soft-delete),
+Overview (`/overview`: balance / spent / income), Search (note/category/amount/
+payment/date), Reports & filters (date range + category/type/payment, colored
+by-category bars, by-payment, fixed reference, matching list), Categories
+(CRUD, **per-category colors** from a palette), Fixed expenses (CRUD + monthly
+total), and the Summary slide-over (spent-this-month + remaining money,
+expenses-only toggle, **this-month / all-time / custom range**, CSV export).
+
+RLS re-verified: isolation holds across select/insert/update/delete (a user
+cannot read, insert-as, update, or delete another user's rows).
+
+Builds clean (`npm run build`). Run: `cd web && npm run dev`.
+Demo login: `demo@xpense.app` / `Demo123456`.
 
 Next: Phase 3 (mobile + offline sync). Remote:
 https://github.com/INmahi/personal-finance-app

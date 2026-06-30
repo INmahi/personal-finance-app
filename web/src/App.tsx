@@ -9,6 +9,7 @@ import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
 import FixedExpenses from './pages/FixedExpenses';
 import Reports from './pages/Reports';
+import Search from './pages/Search';
 
 export default function App() {
   const { session } = useAuth();
@@ -25,8 +26,9 @@ export default function App() {
           </RequireAuth>
         }
       >
-        <Route path="/" element={<Home />} />
-        <Route path="/transactions" element={<Transactions />} />
+        <Route index element={<Transactions />} />
+        <Route path="/overview" element={<Home />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/fixed" element={<FixedExpenses />} />

@@ -1,28 +1,12 @@
-import { useMemo, useState } from 'react';
 import { useFinance } from '../data/FinanceProvider';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
 import { formatBDT } from '../lib/format';
-import type { Direction } from '../types/db';
 
 export default function Transactions() {
-  const { loading, error, transactions, categories, removeTransaction } = useFinance();
-  const [q, setQ] = useState('');
-  const [cat, setCat] = useState('');
-  const [dir, setDir] = useState<'all' | Direction>('all');
+  const { loading, error, transactions, removeTransaction } = useFinance();
 
-  const filtered = useMemo(
-    () =>
-      transactions.filter((t) => {
-        if (dir !== 'all' && t.direction !== dir) return false;
-        if (cat && t.category_id !== cat) return false;
-        if (q && !(t.note ?? '').toLowerCase().includes(q.toLowerCase())) return false;
-        return true;
-      }),
-    [transactions, dir, cat, q],
-  );
-
-  const net = filtered.reduce((s, t) => s + (t.direction === 'in' ? t.amount : -t.amount), 0);
+  const net = transactions.reduce((s, t) => s + (t.direction === 'in' ? t.amount : -t.amount), 0);
 
   async function onDelete(id: string) {
     if (!window.confirm('Delete this transaction?')) return;
@@ -39,39 +23,6 @@ export default function Transactions() {
       <div className="card">
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: 'var(--sp-3)',
-            marginBottom: 'var(--sp-4)',
-          }}
-        >
-          <div className="field">
-            <label htmlFor="search">Search note</label>
-            <input id="search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. lunch" />
-          </div>
-          <div className="field">
-            <label htmlFor="filter-dir">Type</label>
-            <select id="filter-dir" value={dir} onChange={(e) => setDir(e.target.value as 'all' | Direction)}>
-              <option value="all">All</option>
-              <option value="out">Expense</option>
-              <option value="in">Income</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="filter-cat">Category</label>
-            <select id="filter-cat" value={cat} onChange={(e) => setCat(e.target.value)}>
-              <option value="">All categories</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.kind})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div
-          style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -79,7 +30,7 @@ export default function Transactions() {
           }}
         >
           <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
-            {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
+            {transactions.length} {transactions.length === 1 ? 'entry' : 'entries'}
           </span>
           <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
             Net:{' '}
@@ -88,9 +39,17 @@ export default function Transactions() {
             </strong>
           </span>
         </div>
-
-        {loading ? <p className="muted">Loading…</p> : <TransactionList items={filtered} onDelete={onDelete} />}
+        {loading ? (
+          <p className="muted">Loading…</p>
+        ) : (
+          <TransactionList items={transactions} onDelete={onDelete} />
+        )}
       </div>
+
+      <p className="muted" style={{ fontSize: 'var(--fs-sm)', margin: 0 }}>
+        Looking for something? Use <strong>Search</strong> in the top bar, or <strong>Filter</strong>{' '}
+        (Reports) to slice by date, category, type, and payment.
+      </p>
     </div>
   );
 }

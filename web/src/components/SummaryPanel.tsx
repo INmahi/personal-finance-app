@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useFinance } from '../data/FinanceProvider';
-import { formatBDT, monthStartISO } from '../lib/format';
+import { formatBDT, monthStartISO, todayISO } from '../lib/format';
 import { downloadCSV } from '../lib/csv';
 import './SummaryPanel.css';
 
-type Scope = 'month' | 'all';
+type Scope = 'month' | 'all' | 'custom';
 
 export default function SummaryPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { transactions, categoriesById, balance, spentThisMonth } = useFinance();
   const [scope, setScope] = useState<Scope>('month');
   const [expensesOnly, setExpensesOnly] = useState(true);
+  const [start, setStart] = useState(monthStartISO());
+  const [end, setEnd] = useState(todayISO());
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -25,10 +27,11 @@ export default function SummaryPanel({ open, onClose }: { open: boolean; onClose
     () =>
       transactions.filter((t) => {
         if (scope === 'month' && t.occurred_on < monthStart) return false;
+        if (scope === 'custom' && (t.occurred_on < start || t.occurred_on > end)) return false;
         if (expensesOnly && t.direction !== 'out') return false;
         return true;
       }),
-    [transactions, scope, expensesOnly, monthStart],
+    [transactions, scope, expensesOnly, monthStart, start, end],
   );
 
   const catName = (id: string | null) =>
@@ -96,6 +99,9 @@ export default function SummaryPanel({ open, onClose }: { open: boolean; onClose
             <button className={scope === 'all' ? 'active' : ''} onClick={() => setScope('all')}>
               All time
             </button>
+            <button className={scope === 'custom' ? 'active' : ''} onClick={() => setScope('custom')}>
+              Custom
+            </button>
           </div>
           <label style={{ display: 'inline-flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
             <input
@@ -108,9 +114,23 @@ export default function SummaryPanel({ open, onClose }: { open: boolean; onClose
           </label>
         </div>
 
+        {scope === 'custom' && (
+          <div style={{ display: 'flex', gap: 'var(--sp-3)' }}>
+            <div className="field" style={{ flex: 1 }}>
+              <label htmlFor="s-start">From</label>
+              <input id="s-start" type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+            </div>
+            <div className="field" style={{ flex: 1 }}>
+              <label htmlFor="s-end">To</label>
+              <input id="s-end" type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
+            </div>
+          </div>
+        )}
+
         <div>
           <div className="muted" style={{ fontSize: 'var(--fs-sm)', fontWeight: 600 }}>
-            Expenses by category{scope === 'month' ? ' (this month)' : ' (all time)'} ·{' '}
+            Expenses by category
+            {scope === 'month' ? ' (this month)' : scope === 'all' ? ' (all time)' : ' (custom range)'} ·{' '}
             {formatBDT(scopeSpent)}
           </div>
           {byCategory.length === 0 ? (

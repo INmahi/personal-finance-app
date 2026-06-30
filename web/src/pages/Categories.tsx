@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useFinance } from '../data/FinanceProvider';
+import { categoryColor, suggestColor } from '../lib/colors';
 import type { Category, CategoryKind } from '../types/db';
 
 function CategoryRow({ c }: { c: Category }) {
@@ -24,7 +25,7 @@ function CategoryRow({ c }: { c: Category }) {
             width: 14,
             height: 14,
             borderRadius: 4,
-            background: c.color ?? 'var(--surface-2)',
+            background: categoryColor(c),
             border: '1px solid var(--border)',
             display: 'inline-block',
           }}
@@ -47,7 +48,7 @@ export default function Categories() {
   const { categories, addCategory, loading, error } = useFinance();
   const [name, setName] = useState('');
   const [kind, setKind] = useState<CategoryKind>('expense');
-  const [color, setColor] = useState('#c96442');
+  const [color, setColor] = useState(suggestColor(0));
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -66,6 +67,7 @@ export default function Categories() {
     try {
       await addCategory({ name: trimmed, kind, color });
       setName('');
+      setColor(suggestColor(categories.length + 1));
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Failed to add category');
     } finally {
