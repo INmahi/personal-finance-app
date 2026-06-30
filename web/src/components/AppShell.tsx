@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import SummaryPanel from './SummaryPanel';
 import Logo from './Logo';
+import { IconFilter, IconSearch } from './icons';
 import './AppShell.css';
 
 export default function AppShell() {
@@ -12,7 +13,6 @@ export default function AppShell() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Close the mobile drawer whenever the route changes.
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
@@ -39,36 +39,30 @@ export default function AppShell() {
     </>
   );
 
-  const actions = (
-    <>
-      <button className="btn btn-ghost" onClick={() => navigate('/search')}>
-        🔍 Search
-      </button>
-      <button className="btn btn-ghost" onClick={() => navigate('/reports')}>
-        ⚙ Filter
-      </button>
-      <button className="btn btn-primary" onClick={() => setSummaryOpen(true)}>
-        Summary
-      </button>
-      <button className="btn btn-ghost" onClick={() => void signOut()}>
-        Sign out
-      </button>
-    </>
-  );
-
   return (
     <div className="shell">
       <header className="appheader">
         <div className="topbar">
-          <button
-            className="brand-btn"
-            onClick={() => navigate('/')}
-            aria-label="Go to home"
-          >
+          <button className="brand-btn" onClick={() => navigate('/')} aria-label="Home">
             <Logo />
           </button>
 
-          <div className="bar-actions">{actions}</div>
+          <nav className="tabs desktop-tabs">{tabs}</nav>
+
+          <div className="bar-actions">
+            <button className="icon-btn" onClick={() => navigate('/search')} aria-label="Search" title="Search">
+              <IconSearch />
+            </button>
+            <button className="icon-btn" onClick={() => navigate('/reports')} aria-label="Filter" title="Filter">
+              <IconFilter />
+            </button>
+            <button className="btn btn-primary" onClick={() => setSummaryOpen(true)}>
+              Summary
+            </button>
+            <button className="btn btn-ghost" onClick={() => void signOut()}>
+              Sign out
+            </button>
+          </div>
 
           <button
             className={'hamburger' + (menuOpen ? ' open' : '')}
@@ -80,20 +74,18 @@ export default function AppShell() {
           </button>
         </div>
 
-        <nav className="tabs desktop-tabs">{tabs}</nav>
-
         <div className={'drawer' + (menuOpen ? ' open' : '')}>
           <div className="drawer-inner">
             <nav className="tabs drawer-tabs">{tabs}</nav>
             <div className="drawer-actions">
-              <button className="btn btn-ghost" onClick={() => navigate('/search')}>
-                🔍 Search
+              <button className="btn btn-ghost drawer-item" onClick={() => navigate('/search')}>
+                <IconSearch /> Search
               </button>
-              <button className="btn btn-ghost" onClick={() => navigate('/reports')}>
-                ⚙ Filter
+              <button className="btn btn-ghost drawer-item" onClick={() => navigate('/reports')}>
+                <IconFilter /> Filter
               </button>
               <button
-                className="btn btn-primary"
+                className="btn btn-primary drawer-item"
                 onClick={() => {
                   setMenuOpen(false);
                   setSummaryOpen(true);
@@ -101,7 +93,7 @@ export default function AppShell() {
               >
                 Summary
               </button>
-              <button className="btn btn-ghost" onClick={() => void signOut()}>
+              <button className="btn btn-ghost drawer-item" onClick={() => void signOut()}>
                 Sign out
               </button>
             </div>
