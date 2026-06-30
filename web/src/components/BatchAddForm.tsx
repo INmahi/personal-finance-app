@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useFinance } from '../data/FinanceProvider';
 import { PAYMENT_METHODS } from '../types/db';
-import type { Direction, NewTransaction, PaymentMethod } from '../types/db';
+import type { NewTransaction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
+import './BatchAddForm.css';
 
 interface Draft {
-  direction: Direction;
   amount: string;
   date: string;
   categoryId: string;
@@ -14,9 +14,8 @@ interface Draft {
 }
 
 function blank(prev?: Draft): Draft {
-  // New rows inherit date / type / payment from the previous row for fast entry.
+  // New rows inherit date / payment from the previous row for fast entry.
   return {
-    direction: prev?.direction ?? 'out',
     amount: '',
     date: prev?.date ?? todayISO(),
     categoryId: '',
@@ -27,7 +26,8 @@ function blank(prev?: Draft): Draft {
 
 export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
   const { categories, addTransactions } = useFinance();
-  const [rows, setRows] = useState<Draft[]>([blank()]);
+  const expenseCats = useMemo(() => categories.filter((c) => c.kind === 'expense'), [categories]);
+  const [rows, setRows] = useState<Draft[]>([blank(), blank(), blank()]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,9 +39,6 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
   }
   function removeRow(i: number) {
     setRows((rs) => (rs.length === 1 ? rs : rs.filter((_, idx) => idx !== i)));
-  }
-  function catsFor(d: Direction) {
-    return categories.filter((c) => c.kind === (d === 'out' ? 'expense' : 'income'));
   }
 
   async function saveAll() {
@@ -60,7 +57,7 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
         return;
       }
       inputs.push({
-        direction: r.direction,
+        direction: 'out',
         amount: amt,
         occurred_on: r.date,
         category_id: r.categoryId || null,
@@ -71,7 +68,7 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
     setBusy(true);
     try {
       await addTransactions(inputs);
-      setRows([blank()]);
+      setRows([blank(), blank(), blank()]);
       onDone?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save');
@@ -83,96 +80,77 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <strong>Batch add</strong>
+        <strong>Batch add expenses</strong>
         <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
           {rows.length} {rows.length === 1 ? 'row' : 'rows'}
         </span>
       </div>
 
-      {rows.map((r, i) => (
-        <div
-          key={i}
-          style={{
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            padding: 'var(--sp-3)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--sp-2)',
-            background: 'var(--surface)',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span className="muted" style={{ fontSize: 'var(--fs-sm)', fontWeight: 600 }}>
-              Row {i + 1}
-            </span>
-            <button
-              className="btn btn-ghost"
-              type="button"
-              onClick={() => removeRow(i)}
-              disabled={rows.length === 1}
-              aria-label={`Remove row ${i + 1}`}
-              style={{ padding: '4px 10px' }}
-            >
-              ✕
-            </button>
-          </div>
+      <div className="batch-head">
+        <span>Amount (৳)</span>
+        <span>Date</span>
+        <span>Category</span>
+        <span>Payment</span>
+        <span>Note</span>
+        <span />
+      </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 'var(--sp-2)' }}>
-            <div className="field">
-              <label>Type</label>
-              <select
-                value={r.direction}
-                onChange={(e) => update(i, { direction: e.target.value as Direction, categoryId: '' })}
-              >
-                <option value="out">Expense</option>
-                <option value="in">Income</option>
-              </select>
-            </div>
-            <div className="field">
-              <label>Amount (৳)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={r.amount}
-                onChange={(e) => update(i, { amount: e.target.value })}
-                placeholder="0.00"
-              />
-            </div>
-            <div className="field">
-              <label>Date</label>
-              <input type="date" value={r.date} onChange={(e) => update(i, { date: e.target.value })} />
-            </div>
-            <div className="field">
-              <label>{r.direction === 'out' ? 'Category' : 'Source'}</label>
-              <select value={r.categoryId} onChange={(e) => update(i, { categoryId: e.target.value })}>
-                <option value="">{r.direction === 'out' ? 'Uncategorized' : 'Unspecified'}</option>
-                {catsFor(r.direction).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label>Payment</label>
-              <select
-                value={r.payment}
-                onChange={(e) => update(i, { payment: e.target.value as PaymentMethod })}
-              >
-                {PAYMENT_METHODS.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label>Note</label>
-              <input value={r.note} onChange={(e) => update(i, { note: e.target.value })} placeholder="optional" />
-            </div>
-          </div>
+      {rows.map((r, i) => (
+        <div className="batch-row" key={i}>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={r.amount}
+            onChange={(e) => update(i, { amount: e.target.value })}
+            placeholder="0.00"
+            aria-label={`Row ${i + 1} amount`}
+          />
+          <input
+            type="date"
+            value={r.date}
+            onChange={(e) => update(i, { date: e.target.value })}
+            aria-label={`Row ${i + 1} date`}
+          />
+          <select
+            value={r.categoryId}
+            onChange={(e) => update(i, { categoryId: e.target.value })}
+            aria-label={`Row ${i + 1} category`}
+          >
+            <option value="">Uncategorized</option>
+            {expenseCats.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={r.payment}
+            onChange={(e) => update(i, { payment: e.target.value as PaymentMethod })}
+            aria-label={`Row ${i + 1} payment`}
+          >
+            {PAYMENT_METHODS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+          <input
+            className="note-cell"
+            value={r.note}
+            onChange={(e) => update(i, { note: e.target.value })}
+            placeholder="Note (optional)"
+            aria-label={`Row ${i + 1} note`}
+          />
+          <button
+            className="btn btn-ghost rm"
+            type="button"
+            onClick={() => removeRow(i)}
+            disabled={rows.length === 1}
+            aria-label={`Remove row ${i + 1}`}
+          >
+            ✕
+          </button>
         </div>
       ))}
 
