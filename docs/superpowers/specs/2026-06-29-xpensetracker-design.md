@@ -35,7 +35,15 @@ private per user, work offline on mobile, and fit the owner's exact workflow.
 - **Summaries / reports**: This-month and custom-date-range; expense total,
   by-category breakdown (with a simple chart), income total, net for the period,
   by-payment-method breakdown, and fixed-monthly total for reference.
+- **Summary tab (slide-over panel)**: a dedicated Summary view that opens with a
+  horizontal **slide-in** transition. Headline numbers: **spent so far this
+  month** and **remaining money** (= current balance, total in − total out).
+  Within the panel the user can switch scope/options, including an
+  **expenses-only** view, and **export / download** the (filtered) expenses as a
+  **CSV** file.
 - Single fixed currency: **BDT (৳)**.
+- **Visual design**: **light theme** for the web app, guided by the UX design
+  doc and a shared design-token set (see §6.3).
 - Clients: **Web** (online-only) and **Android** (offline-capable with sync).
 
 ### Out of scope (MVP — deferred)
@@ -173,7 +181,9 @@ Enabled on all tables. `profiles`: row visible/editable where `id = auth.uid()`.
   - **Add money** — quick income entry (amount, date, source category, payment method, note).
   - **Categories** — manage expense + income categories.
   - **Fixed expenses** — manage the fixed list + see its total.
+  - **Summary (slide-over panel)** — opens with a horizontal slide-in. Headline: **spent so far this month** + **remaining money** (current balance). Scope toggle (this month / custom range) and an **expenses-only** option; **Download CSV** of the filtered expenses.
   - **Reports** — this-month / custom range: expense total, by-category breakdown + chart, income total, net, by-payment-method, fixed-monthly reference.
+- **Light theme** throughout; respects `prefers-reduced-motion` (slide-over falls back to a fade/instant open).
 - Session persisted in browser.
 
 ### 6.2 Mobile (Android, offline-capable)
@@ -187,6 +197,15 @@ Enabled on all tables. `profiles`: row visible/editable where `id = auth.uid()`.
   - **Conflict policy**: last-write-wins by `updated_at` (safe — each user only
     edits their own data from their own devices).
 - Same screens as web.
+
+### 6.3 Visual design & UX
+- **Theme:** light. Calm, high-contrast, finance-appropriate. Tokens (color,
+  type scale, spacing, radii, motion) defined once and shared web→mobile; to be
+  generated with the `ui-design-system` skill at Phase 2 plan time.
+- **Summary slide-over:** ~280–320ms horizontal slide with ease-out; backdrop
+  scrim; closes on scrim tap / Esc / swipe. Honors `prefers-reduced-motion`.
+- UX research, the primary persona, and the Summary journey map live in
+  [ux/2026-06-29-ux-design.md](../ux/2026-06-29-ux-design.md).
 
 ## 7. Delivery Phases
 

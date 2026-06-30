@@ -55,6 +55,17 @@ produces working, testable software on its own.
 
 ## Status
 
-Pre-implementation. Design spec + Phase 1 plan written. Git repo initialized;
-remote: https://github.com/INmahi/personal-finance-app (public). Phase 1
-(backend) ready to build.
+**Phase 1 (backend) built and verified** on hosted Supabase project
+`xpensetracker` (ref `uvabpvurkswoybmxuzjk`, ap-south-1). Schema, triggers, RLS,
+and security hardening applied via migrations in `supabase/`; advisors clean;
+RLS isolation verified. Connection values in `.env.example`.
+
+⚠️ **Outstanding manual step:** disable public signup in the Supabase dashboard
+(Authentication → Sign In/Providers → Email) to enforce invite-only — see
+`supabase/README.md`.
+
+Local Supabase CLI install was blocked by a network error at build time; the
+backend was built via the Supabase MCP. Migrations replay locally with
+`npx supabase db reset` once the CLI installs.
+
+Next: Phase 2 (web app). Remote: https://github.com/INmahi/personal-finance-app

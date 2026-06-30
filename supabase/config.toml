@@ -1,0 +1,10 @@
+# Minimal Supabase CLI config. The CLI applies defaults for unspecified fields.
+# When the local stack is set up (after `npx supabase init` works on a good network),
+# this can be regenerated/expanded; keep `enable_signup = false` (invite-only).
+project_id = "xpensetracker"
+
+[auth]
+# Invite-only: public signup disabled. NOTE: this controls LOCAL dev only.
+# The hosted project's signup setting must be turned off in the dashboard
+# (Authentication -> Sign In / Providers -> Email -> disable "Allow new users to sign up").
+enable_signup = false
