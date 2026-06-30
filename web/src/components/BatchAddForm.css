@@ -1,48 +1,113 @@
-.batch-head,
-.batch-row {
-  display: grid;
-  grid-template-columns: minmax(120px, 1.4fr) 100px auto 110px 36px 36px;
-  gap: var(--sp-2);
+.batch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.batch-titlebar {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
-.batch-head {
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
-  font-weight: 600;
-  padding: 0 2px;
+/* Horizontal scroll keeps the spreadsheet intact on narrow screens. */
+.sheet-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-sm);
 }
 
-.batch-row .icon-sm {
-  width: 34px;
-  height: 38px;
-  padding: 0;
+.sheet {
+  min-width: 600px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.sheet-head,
+.sheet-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.6fr) 110px auto 110px 40px 40px;
+}
+
+.sheet-head {
+  background: var(--surface-2);
+}
+.sheet-head > span {
+  padding: 8px 10px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border);
+}
+.sheet-head > span:last-child {
+  border-right: none;
+}
+
+/* Cells: borders come from the grid, inputs are borderless so it reads as Excel. */
+.sheet-row > * {
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  min-height: 40px;
+}
+.sheet-row .cell-last {
+  border-right: none;
+}
+
+.sheet input,
+.sheet select {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  width: 100%;
+  height: 40px;
+  padding: 8px 10px;
+}
+.sheet input:focus,
+.sheet select:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+.sheet .compact-date {
+  width: 100%;
+}
+.sheet .cd-btn {
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  height: 40px;
+  justify-content: flex-start;
+  background: transparent;
+}
+
+.sheet .cell-btn {
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  color: var(--text-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background var(--slide-ms) var(--ease);
 }
-.batch-row .icon-sm.active {
+.sheet .cell-btn:hover {
+  background: var(--surface-2);
+}
+.sheet .cell-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.sheet .cell-btn.active {
   color: var(--primary);
-  border-color: var(--primary);
 }
 
-.batch-row .note-cell {
+.sheet .note-cell {
   grid-column: 1 / -1;
-}
-
-/* Mobile: compact 2-column card per row, no header */
-@media (max-width: 760px) {
-  .batch-head {
-    display: none;
-  }
-  .batch-row {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-2);
-    padding: var(--sp-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-  }
-  .batch-row .note-cell {
-    grid-column: 1 / -1;
-  }
+  border-right: none;
 }

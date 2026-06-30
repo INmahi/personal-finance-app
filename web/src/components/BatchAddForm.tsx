@@ -8,20 +8,19 @@ import { IconNote } from './icons';
 import './BatchAddForm.css';
 
 interface Draft {
+  categoryName: string;
   amount: string;
   date: string;
-  categoryId: string;
   payment: PaymentMethod;
   note: string;
   noteOpen: boolean;
 }
 
 function blank(prev?: Draft): Draft {
-  // New rows inherit date / payment from the previous row for fast entry.
   return {
+    categoryName: '',
     amount: '',
     date: prev?.date ?? todayISO(),
-    categoryId: '',
     payment: prev?.payment ?? 'cash',
     note: '',
     noteOpen: false,
@@ -29,7 +28,7 @@ function blank(prev?: Draft): Draft {
 }
 
 export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
-  const { categories, addTransactions } = useFinance();
+  const { categories, addTransactions, ensureCategory } = useFinance();
   const expenseCats = useMemo(() => categories.filter((c) => c.kind === 'expense'), [categories]);
   const [rows, setRows] = useState<Draft[]>([blank(), blank(), blank()]);
   const [busy, setBusy] = useState(false);
@@ -47,30 +46,52 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
 
   async function saveAll() {
     setError(null);
-    const nonEmpty = rows.filter((r) => !(r.amount.trim() === '' && r.note.trim() === ''));
+    const nonEmpty = rows.filter(
+      (r) => !(r.amount.trim() === '' && r.note.trim() === '' && r.categoryName.trim() === ''),
+    );
     if (nonEmpty.length === 0) {
       setError('Add at least one row with an amount.');
       return;
     }
-    const inputs: NewTransaction[] = [];
     for (let i = 0; i < nonEmpty.length; i++) {
-      const r = nonEmpty[i];
-      const amt = Number(r.amount);
+      const amt = Number(nonEmpty[i].amount);
       if (!Number.isFinite(amt) || amt <= 0) {
         setError(`Row ${i + 1}: enter an amount greater than 0.`);
         return;
       }
-      inputs.push({
-        direction: 'out',
-        amount: amt,
-        occurred_on: r.date,
-        category_id: r.categoryId || null,
-        payment_method: r.payment,
-        note: r.note.trim() || null,
-      });
     }
+
     setBusy(true);
     try {
+      // Resolve category names -> ids, creating new ones once each.
+      const map = new Map<string, string>();
+      for (const c of expenseCats) map.set(c.name.toLowerCase(), c.id);
+
+      const inputs: NewTransaction[] = [];
+      for (const r of nonEmpty) {
+        const nm = r.categoryName.trim();
+        let catId: string | null = null;
+        if (nm) {
+          const key = nm.toLowerCase();
+          if (map.has(key)) catId = map.get(key)!;
+          else {
+            const created = await ensureCategory(nm, 'expense');
+            if (created) {
+              catId = created.id;
+              map.set(key, created.id);
+            }
+          }
+        }
+        inputs.push({
+          direction: 'out',
+          amount: Number(r.amount),
+          occurred_on: r.date,
+          category_id: catId,
+          payment_method: r.payment,
+          note: r.note.trim() || null,
+        });
+      }
+
       await addTransactions(inputs);
       setRows([blank(), blank(), blank()]);
       onDone?.();
@@ -82,97 +103,94 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
   }
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="batch">
+      <div className="batch-titlebar">
         <strong>Batch add expenses</strong>
         <span className="muted" style={{ fontSize: 'var(--fs-sm)' }}>
           {rows.length} {rows.length === 1 ? 'row' : 'rows'}
         </span>
       </div>
 
-      <div className="batch-head">
-        <span>Where spent</span>
-        <span>Amount (৳)</span>
-        <span>Date</span>
-        <span>Payment</span>
-        <span />
-        <span />
+      <div className="sheet-scroll">
+        <div className="sheet">
+          <div className="sheet-head">
+            <span>Spent on</span>
+            <span>Amount (৳)</span>
+            <span>Date</span>
+            <span>Payment</span>
+            <span />
+            <span />
+          </div>
+
+          {rows.map((r, i) => (
+            <div className="sheet-row" key={i}>
+              <input
+                list="batch-cat-list"
+                value={r.categoryName}
+                onChange={(e) => update(i, { categoryName: e.target.value })}
+                placeholder="Pick or type…"
+                autoComplete="off"
+                aria-label={`Row ${i + 1} spent on`}
+              />
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={r.amount}
+                onChange={(e) => update(i, { amount: e.target.value })}
+                placeholder="0.00"
+                aria-label={`Row ${i + 1} amount`}
+              />
+              <CompactDate value={r.date} onChange={(v) => update(i, { date: v })} ariaLabel={`Row ${i + 1} date`} />
+              <select
+                value={r.payment}
+                onChange={(e) => update(i, { payment: e.target.value as PaymentMethod })}
+                aria-label={`Row ${i + 1} payment`}
+              >
+                {PAYMENT_METHODS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                className={'cell-btn' + (r.noteOpen || r.note ? ' active' : '')}
+                type="button"
+                onClick={() => update(i, { noteOpen: !r.noteOpen })}
+                aria-label={`Row ${i + 1} note`}
+                title="Note"
+              >
+                <IconNote />
+              </button>
+              <button
+                className="cell-btn cell-last"
+                type="button"
+                onClick={() => removeRow(i)}
+                disabled={rows.length === 1}
+                aria-label={`Remove row ${i + 1}`}
+              >
+                ✕
+              </button>
+
+              {r.noteOpen && (
+                <input
+                  className="note-cell"
+                  value={r.note}
+                  onChange={(e) => update(i, { note: e.target.value })}
+                  placeholder="Note (optional)"
+                  aria-label={`Row ${i + 1} note text`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {rows.map((r, i) => (
-        <div className="batch-row" key={i}>
-          <select
-            value={r.categoryId}
-            onChange={(e) => update(i, { categoryId: e.target.value })}
-            aria-label={`Row ${i + 1} where spent`}
-          >
-            <option value="">Uncategorized</option>
-            {expenseCats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={r.amount}
-            onChange={(e) => update(i, { amount: e.target.value })}
-            placeholder="0.00"
-            aria-label={`Row ${i + 1} amount`}
-          />
-
-          <CompactDate
-            value={r.date}
-            onChange={(v) => update(i, { date: v })}
-            ariaLabel={`Row ${i + 1} date`}
-          />
-
-          <select
-            value={r.payment}
-            onChange={(e) => update(i, { payment: e.target.value as PaymentMethod })}
-            aria-label={`Row ${i + 1} payment`}
-          >
-            {PAYMENT_METHODS.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-
-          <button
-            className={'btn btn-ghost icon-sm' + (r.noteOpen || r.note ? ' active' : '')}
-            type="button"
-            onClick={() => update(i, { noteOpen: !r.noteOpen })}
-            aria-label={`Row ${i + 1} note`}
-            title="Note"
-          >
-            <IconNote />
-          </button>
-
-          <button
-            className="btn btn-ghost icon-sm"
-            type="button"
-            onClick={() => removeRow(i)}
-            disabled={rows.length === 1}
-            aria-label={`Remove row ${i + 1}`}
-          >
-            ✕
-          </button>
-
-          {r.noteOpen && (
-            <input
-              className="note-cell"
-              value={r.note}
-              onChange={(e) => update(i, { note: e.target.value })}
-              placeholder="Note (optional)"
-              aria-label={`Row ${i + 1} note text`}
-            />
-          )}
-        </div>
-      ))}
+      <datalist id="batch-cat-list">
+        {expenseCats.map((c) => (
+          <option key={c.id} value={c.name} />
+        ))}
+      </datalist>
 
       {error && <div className="error">{error}</div>}
 

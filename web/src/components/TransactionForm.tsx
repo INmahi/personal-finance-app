@@ -8,11 +8,11 @@ import CompactDate from './CompactDate';
 import { IconNote } from './icons';
 
 export default function TransactionForm() {
-  const { categories, addTransaction } = useFinance();
+  const { categories, addTransaction, ensureCategory } = useFinance();
   const [direction, setDirection] = useState<Direction>('out');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(todayISO());
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryName, setCategoryName] = useState('');
   const [payment, setPayment] = useState<PaymentMethod>('cash');
   const [note, setNote] = useState('');
   const [noteOpen, setNoteOpen] = useState(false);
@@ -24,7 +24,7 @@ export default function TransactionForm() {
 
   function switchDirection(d: Direction) {
     setDirection(d);
-    setCategoryId('');
+    setCategoryName('');
   }
 
   async function onSubmit(e: FormEvent) {
@@ -37,18 +37,19 @@ export default function TransactionForm() {
     }
     setBusy(true);
     try {
+      const cat = await ensureCategory(categoryName, kind);
       await addTransaction({
         direction,
         amount: amt,
         occurred_on: date,
-        category_id: categoryId || null,
+        category_id: cat ? cat.id : null,
         payment_method: payment,
         note: note.trim() || null,
       });
       setAmount('');
       setNote('');
       setNoteOpen(false);
-      setCategoryId('');
+      setCategoryName('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
@@ -69,15 +70,20 @@ export default function TransactionForm() {
 
       <div className="entry-row">
         <div className="field grow2">
-          <label htmlFor="where">{kind === 'expense' ? 'Where spent' : 'Source'}</label>
-          <select id="where" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-            <option value="">{kind === 'expense' ? 'Uncategorized' : 'Unspecified'}</option>
+          <label htmlFor="where">{kind === 'expense' ? 'Spent on' : 'Source'}</label>
+          <input
+            id="where"
+            list="tx-cat-list"
+            value={categoryName}
+            onChange={(e) => setCategoryName(e.target.value)}
+            placeholder={kind === 'expense' ? 'Pick or type…' : 'Salary, gift…'}
+            autoComplete="off"
+          />
+          <datalist id="tx-cat-list">
             {cats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
+          </datalist>
         </div>
 
         <div className="field">
@@ -131,7 +137,7 @@ export default function TransactionForm() {
             type="text"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="e.g. Lunch at office"
+            placeholder="e.g. with friends"
             autoFocus
           />
         </div>
