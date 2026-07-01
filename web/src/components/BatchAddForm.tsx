@@ -5,6 +5,7 @@ import type { NewTransaction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
 import { resolveCategoryInput } from '../lib/category';
 import CompactDate from './CompactDate';
+import CategoryField from './CategoryField';
 import { IconNote } from './icons';
 import './BatchAddForm.css';
 
@@ -30,7 +31,10 @@ function blank(prev?: Draft): Draft {
 
 export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
   const { categories, addTransactions } = useFinance();
-  const expenseCats = useMemo(() => categories.filter((c) => c.kind === 'expense'), [categories]);
+  const expenseCatNames = useMemo(
+    () => categories.filter((c) => c.kind === 'expense').map((c) => c.name),
+    [categories],
+  );
   const [rows, setRows] = useState<Draft[]>([blank(), blank(), blank()]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -109,13 +113,12 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
 
           {rows.map((r, i) => (
             <div className="sheet-row" key={i}>
-              <input
-                list="batch-cat-list"
+              <CategoryField
                 value={r.categoryName}
-                onChange={(e) => update(i, { categoryName: e.target.value })}
-                placeholder="Pick or type…"
-                autoComplete="off"
-                aria-label={`Row ${i + 1} spent on`}
+                onChange={(v) => update(i, { categoryName: v })}
+                options={expenseCatNames}
+                placeholder="type or pick"
+                ariaLabel={`Row ${i + 1} category`}
               />
               <input
                 type="number"
@@ -170,12 +173,6 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
           ))}
         </div>
       </div>
-
-      <datalist id="batch-cat-list">
-        {expenseCats.map((c) => (
-          <option key={c.id} value={c.name} />
-        ))}
-      </datalist>
 
       {error && <div className="error">{error}</div>}
 

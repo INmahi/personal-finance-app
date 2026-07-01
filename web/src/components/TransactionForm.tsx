@@ -4,14 +4,15 @@ import { useFinance } from '../data/FinanceProvider';
 import { PAYMENT_METHODS } from '../types/db';
 import type { Direction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
+import { resolveCategoryInput } from '../lib/category';
 import CompactDate from './CompactDate';
+import CategoryField from './CategoryField';
 import { IconNote } from './icons';
 
 export default function TransactionForm() {
   const { categories, addTransaction } = useFinance();
   const [direction, setDirection] = useState<Direction>('out');
-  const [categoryId, setCategoryId] = useState('');
-  const [customName, setCustomName] = useState('');
+  const [categoryName, setCategoryName] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(todayISO());
   const [payment, setPayment] = useState<PaymentMethod>('cash');
@@ -21,13 +22,14 @@ export default function TransactionForm() {
   const [error, setError] = useState<string | null>(null);
 
   const kind = direction === 'out' ? 'expense' : 'income';
-  const cats = useMemo(() => categories.filter((c) => c.kind === kind), [categories, kind]);
-  const typing = customName.trim() !== '';
+  const catNames = useMemo(
+    () => categories.filter((c) => c.kind === kind).map((c) => c.name),
+    [categories, kind],
+  );
 
   function switchDirection(d: Direction) {
     setDirection(d);
-    setCategoryId('');
-    setCustomName('');
+    setCategoryName('');
   }
 
   async function onSubmit(e: FormEvent) {
@@ -38,10 +40,7 @@ export default function TransactionForm() {
       setError('Enter an amount greater than 0.');
       return;
     }
-    // Typed custom value wins (stored as a per-transaction label); otherwise the picked category.
-    const custom = customName.trim();
-    const category_id = custom ? null : categoryId || null;
-    const category_label = custom || null;
+    const resolved = resolveCategoryInput(categoryName, kind, categories);
 
     setBusy(true);
     try {
@@ -49,16 +48,15 @@ export default function TransactionForm() {
         direction,
         amount: amt,
         occurred_on: date,
-        category_id,
-        category_label,
+        category_id: resolved.category_id,
+        category_label: resolved.category_label,
         payment_method: payment,
         note: note.trim() || null,
       });
       setAmount('');
       setNote('');
       setNoteOpen(false);
-      setCategoryId('');
-      setCustomName('');
+      setCategoryName('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
@@ -78,28 +76,14 @@ export default function TransactionForm() {
       </div>
 
       <div className="entry-grid">
-        {/* Pick an existing category / source */}
-        <div className="field">
-          <label htmlFor="pick">{kind === 'expense' ? 'Category' : 'Source'}</label>
-          <select id="pick" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={typing}>
-            <option value="">— pick —</option>
-            {cats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Or type a custom one (stored on this entry only) */}
-        <div className="field">
-          <label htmlFor="custom">Or type</label>
-          <input
-            id="custom"
-            value={customName}
-            onChange={(e) => setCustomName(e.target.value)}
-            placeholder={kind === 'expense' ? 'custom category' : 'custom source'}
-            autoComplete="off"
+        <div className="field span-2">
+          <label htmlFor="category">{kind === 'expense' ? 'Category' : 'Source'}</label>
+          <CategoryField
+            value={categoryName}
+            onChange={setCategoryName}
+            options={catNames}
+            placeholder={kind === 'expense' ? 'type or pick a category' : 'type or pick a source'}
+            ariaLabel={kind === 'expense' ? 'Category' : 'Source'}
           />
         </div>
 
@@ -134,9 +118,8 @@ export default function TransactionForm() {
           </select>
         </div>
 
-        {/* Note: a small field beside payment, revealed on demand */}
         <div className="field">
-          <label>{noteOpen ? 'Note' : ' '}</label>
+          <label>{noteOpen ? 'Note' : ' '}</label>
           {noteOpen ? (
             // eslint-disable-next-line jsx-a11y/no-autofocus
             <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="note" autoFocus aria-label="Note" />
