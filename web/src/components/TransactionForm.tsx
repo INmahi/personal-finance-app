@@ -4,16 +4,16 @@ import { useFinance } from '../data/FinanceProvider';
 import { PAYMENT_METHODS } from '../types/db';
 import type { Direction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
-import { resolveCategoryInput } from '../lib/category';
 import CompactDate from './CompactDate';
 import { IconNote } from './icons';
 
 export default function TransactionForm() {
   const { categories, addTransaction } = useFinance();
   const [direction, setDirection] = useState<Direction>('out');
+  const [categoryId, setCategoryId] = useState('');
+  const [customName, setCustomName] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(todayISO());
-  const [categoryName, setCategoryName] = useState('');
   const [payment, setPayment] = useState<PaymentMethod>('cash');
   const [note, setNote] = useState('');
   const [noteOpen, setNoteOpen] = useState(false);
@@ -22,10 +22,12 @@ export default function TransactionForm() {
 
   const kind = direction === 'out' ? 'expense' : 'income';
   const cats = useMemo(() => categories.filter((c) => c.kind === kind), [categories, kind]);
+  const typing = customName.trim() !== '';
 
   function switchDirection(d: Direction) {
     setDirection(d);
-    setCategoryName('');
+    setCategoryId('');
+    setCustomName('');
   }
 
   async function onSubmit(e: FormEvent) {
@@ -36,22 +38,27 @@ export default function TransactionForm() {
       setError('Enter an amount greater than 0.');
       return;
     }
+    // Typed custom value wins (stored as a per-transaction label); otherwise the picked category.
+    const custom = customName.trim();
+    const category_id = custom ? null : categoryId || null;
+    const category_label = custom || null;
+
     setBusy(true);
     try {
-      const resolved = resolveCategoryInput(categoryName, kind, categories);
       await addTransaction({
         direction,
         amount: amt,
         occurred_on: date,
-        category_id: resolved.category_id,
-        category_label: resolved.category_label,
+        category_id,
+        category_label,
         payment_method: payment,
         note: note.trim() || null,
       });
       setAmount('');
       setNote('');
       setNoteOpen(false);
-      setCategoryName('');
+      setCategoryId('');
+      setCustomName('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
@@ -70,22 +77,30 @@ export default function TransactionForm() {
         </button>
       </div>
 
-      <div className="entry-row">
-        <div className="field grow2">
-          <label htmlFor="where">{kind === 'expense' ? 'Spent on' : 'Source'}</label>
+      <div className="entry-grid">
+        {/* Pick an existing category / source */}
+        <div className="field">
+          <label htmlFor="pick">{kind === 'expense' ? 'Category' : 'Source'}</label>
+          <select id="pick" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={typing}>
+            <option value="">— pick —</option>
+            {cats.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Or type a custom one (stored on this entry only) */}
+        <div className="field">
+          <label htmlFor="custom">Or type</label>
           <input
-            id="where"
-            list="tx-cat-list"
-            value={categoryName}
-            onChange={(e) => setCategoryName(e.target.value)}
-            placeholder={kind === 'expense' ? 'Pick or type…' : 'Salary, gift…'}
+            id="custom"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            placeholder={kind === 'expense' ? 'custom category' : 'custom source'}
             autoComplete="off"
           />
-          <datalist id="tx-cat-list">
-            {cats.map((c) => (
-              <option key={c.id} value={c.name} />
-            ))}
-          </datalist>
         </div>
 
         <div className="field">
@@ -103,9 +118,9 @@ export default function TransactionForm() {
           />
         </div>
 
-        <div className="field shrink">
+        <div className="field">
           <label>Date</label>
-          <CompactDate value={date} onChange={setDate} ariaLabel="Spent on date" />
+          <CompactDate value={date} onChange={setDate} ariaLabel="Date" />
         </div>
 
         <div className="field">
@@ -119,31 +134,19 @@ export default function TransactionForm() {
           </select>
         </div>
 
-        <button
-          type="button"
-          className={'icon-btn note-toggle' + (noteOpen || note ? ' active' : '')}
-          onClick={() => setNoteOpen((o) => !o)}
-          aria-label={noteOpen ? 'Hide note' : 'Add note'}
-          title="Note"
-        >
-          <IconNote />
-        </button>
-      </div>
-
-      {noteOpen && (
+        {/* Note: a small field beside payment, revealed on demand */}
         <div className="field">
-          <label htmlFor="note">Note</label>
-          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-          <input
-            id="note"
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="e.g. with friends"
-            autoFocus
-          />
+          <label>{noteOpen ? 'Note' : ' '}</label>
+          {noteOpen ? (
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="note" autoFocus aria-label="Note" />
+          ) : (
+            <button type="button" className="btn note-open-btn" onClick={() => setNoteOpen(true)}>
+              <IconNote /> Add note
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {error && <div className="error">{error}</div>}
 

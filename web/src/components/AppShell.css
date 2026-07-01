@@ -66,10 +66,11 @@
 }
 .tab {
   flex: 0 0 auto;
-  padding: 8px 14px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   font-weight: 600;
+  font-size: var(--fs-sm);
   transition:
     background var(--slide-ms) var(--ease),
     color var(--slide-ms) var(--ease);

@@ -113,25 +113,24 @@ select:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
-/* Inline entry row: category grows, date stays compact, note is a toggle. */
-.entry-row {
-  display: flex;
-  flex-wrap: wrap;
+/* Entry grid: 2 columns — category|type, amount|date, payment|note. */
+.entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--sp-3);
-  align-items: flex-end;
+  align-items: end;
 }
-.entry-row .field {
-  flex: 1 1 140px;
+.note-open-btn {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  background: transparent;
+  padding: 10px 12px;
 }
-.entry-row .field.grow2 {
-  flex: 2 1 180px;
-}
-.entry-row .field.shrink {
-  flex: 0 0 auto;
-}
-.note-toggle.active {
-  color: var(--primary);
-  border-color: var(--primary);
+.note-open-btn:hover {
+  background: var(--surface-2);
 }
 
 @media (prefers-reduced-motion: reduce) {
