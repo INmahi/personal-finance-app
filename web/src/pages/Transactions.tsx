@@ -6,7 +6,7 @@ import TransactionList from '../components/TransactionList';
 import { formatBDT } from '../lib/format';
 
 export default function Transactions() {
-  const { loading, error, transactions, removeTransaction } = useFinance();
+  const { loading, error, transactions, balance, removeTransaction } = useFinance();
   const [mode, setMode] = useState<'single' | 'batch'>('single');
 
   const net = transactions.reduce((s, t) => s + (t.direction === 'in' ? t.amount : -t.amount), 0);
@@ -18,7 +18,34 @@ export default function Transactions() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-5)' }}>
-      <h1 style={{ margin: 0 }}>Transactions</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--sp-3)' }}>
+        <h1 style={{ margin: 0 }}>Transactions</h1>
+        <span
+          title="Remaining balance"
+          style={{
+            display: 'inline-flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            lineHeight: 1.1,
+            background: 'var(--surface-2)',
+            padding: '6px 12px',
+            borderRadius: 'var(--radius-sm)',
+            flex: '0 0 auto',
+          }}
+        >
+          <span className="muted" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+            Balance
+          </span>
+          <strong
+            style={{
+              fontVariantNumeric: 'tabular-nums',
+              color: balance < 0 ? 'var(--danger)' : 'var(--income)',
+            }}
+          >
+            {formatBDT(balance)}
+          </strong>
+        </span>
+      </div>
       {error && <div className="error">{error}</div>}
 
       <div className="seg" role="group" aria-label="Add mode" style={{ alignSelf: 'flex-start' }}>
