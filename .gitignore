@@ -7,3 +7,6 @@ dist/
 build/
 .DS_Store
 *.log
+
+# Netlify local link/state
+.netlify/
