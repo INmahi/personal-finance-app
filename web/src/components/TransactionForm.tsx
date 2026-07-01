@@ -5,12 +5,13 @@ import { PAYMENT_METHODS } from '../types/db';
 import type { Direction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
 import { resolveCategoryInput } from '../lib/category';
+import { categoryColor, suggestColor } from '../lib/colors';
 import CompactDate from './CompactDate';
 import CategoryField from './CategoryField';
 import { IconNote } from './icons';
 
 export default function TransactionForm() {
-  const { categories, addTransaction } = useFinance();
+  const { categories, addTransaction, addCategory } = useFinance();
   const [direction, setDirection] = useState<Direction>('out');
   const [categoryName, setCategoryName] = useState('');
   const [amount, setAmount] = useState('');
@@ -22,8 +23,8 @@ export default function TransactionForm() {
   const [error, setError] = useState<string | null>(null);
 
   const kind = direction === 'out' ? 'expense' : 'income';
-  const catNames = useMemo(
-    () => categories.filter((c) => c.kind === kind).map((c) => c.name),
+  const catOptions = useMemo(
+    () => categories.filter((c) => c.kind === kind).map((c) => ({ name: c.name, color: categoryColor(c) })),
     [categories, kind],
   );
 
@@ -81,9 +82,12 @@ export default function TransactionForm() {
           <CategoryField
             value={categoryName}
             onChange={setCategoryName}
-            options={catNames}
+            options={catOptions}
             placeholder={kind === 'expense' ? 'type or pick a category' : 'type or pick a source'}
             ariaLabel={kind === 'expense' ? 'Category' : 'Source'}
+            onAddCategory={async (name) => {
+              await addCategory({ name, kind, color: suggestColor(categories.length) });
+            }}
           />
         </div>
 

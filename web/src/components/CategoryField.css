@@ -55,7 +55,9 @@
   overflow-y: auto;
 }
 .catfield-menu li button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   text-align: left;
   border: none;
@@ -69,8 +71,24 @@
 .catfield-menu li button:hover {
   background: var(--surface-2);
 }
+.cat-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
 .catfield-empty {
   padding: 8px 10px;
   color: var(--text-muted);
   font-size: var(--fs-sm);
+}
+.catfield-add {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+.catfield-add button {
+  color: var(--primary);
+  font-weight: 700;
 }

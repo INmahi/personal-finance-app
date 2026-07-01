@@ -4,6 +4,7 @@ import { PAYMENT_METHODS } from '../types/db';
 import type { NewTransaction, PaymentMethod } from '../types/db';
 import { todayISO } from '../lib/format';
 import { resolveCategoryInput } from '../lib/category';
+import { categoryColor, suggestColor } from '../lib/colors';
 import CompactDate from './CompactDate';
 import CategoryField from './CategoryField';
 import { IconNote } from './icons';
@@ -30,9 +31,9 @@ function blank(prev?: Draft): Draft {
 }
 
 export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
-  const { categories, addTransactions } = useFinance();
-  const expenseCatNames = useMemo(
-    () => categories.filter((c) => c.kind === 'expense').map((c) => c.name),
+  const { categories, addTransactions, addCategory } = useFinance();
+  const expenseCatOptions = useMemo(
+    () => categories.filter((c) => c.kind === 'expense').map((c) => ({ name: c.name, color: categoryColor(c) })),
     [categories],
   );
   const [rows, setRows] = useState<Draft[]>([blank(), blank(), blank()]);
@@ -116,9 +117,12 @@ export default function BatchAddForm({ onDone }: { onDone?: () => void }) {
               <CategoryField
                 value={r.categoryName}
                 onChange={(v) => update(i, { categoryName: v })}
-                options={expenseCatNames}
+                options={expenseCatOptions}
                 placeholder="type or pick"
                 ariaLabel={`Row ${i + 1} category`}
+                onAddCategory={async (name) => {
+                  await addCategory({ name, kind: 'expense', color: suggestColor(categories.length) });
+                }}
               />
               <input
                 type="number"
